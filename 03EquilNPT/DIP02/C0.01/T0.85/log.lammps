@@ -1,0 +1,69 @@
+LAMMPS (2 Aug 2023 - Update 2)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+variable pdump equal 5000
+variable prun equal 500000
+
+units           lj
+atom_style      full
+dimension       3
+neighbor        1.5 bin
+neigh_modify    every 3 delay 0 check yes
+boundary p p p
+
+bond_style fene
+kspace_style pppm 0.0001
+dielectric 1.0
+pair_style lj/cut/coul/long 2.5 6.0
+
+read_data ${data_file}
+read_data ../../../../02CompressNetwork/DIP02/C0.01/compressed.dat
+Reading data file ...
+  orthogonal box = (-13.300573 -13.300573 -13.300573) to (13.300573 13.300573 13.300573)
+  2 by 4 by 4 MPI processor grid
+  reading atoms ...
+  16000 atoms
+  reading velocities ...
+  16000 velocities
+  scanning bonds ...
+  1 = max bonds/atom
+  reading bonds ...
+  8000 bonds
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        0        0       
+  special bond factors coul:  0        0        0       
+     1 = max # of 1-2 neighbors
+     0 = max # of 1-3 neighbors
+     0 = max # of 1-4 neighbors
+     1 = max # of special neighbors
+  special bonds CPU = 0.009 seconds
+  read_data CPU = 0.219 seconds
+
+#vdw potential
+pair_modify     shift yes
+pair_coeff   * * 1.0 1.0 2.5
+bond_coeff * 30.0 1.5 1.0 1.0
+
+special_bonds fene
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     1 = max # of 1-2 neighbors
+     1 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+
+variable rho_t equal count(all)/vol
+thermo           5000
+thermo_style     custom step temp epair emol etotal press cpu xhi yhi zhi v_rho_t
+thermo_modify   norm yes flush yes
+
+velocity all create ${TT} 482748 dist gaussian mom yes rot yes
+velocity all create 0.85 482748 dist gaussian mom yes rot yes
+timestep    0.01
+
+fix 1 all npt temp ${TT} ${TT} 1.0 iso 0.0 0.0 5.0
+fix 1 all npt temp 0.85 ${TT} 1.0 iso 0.0 0.0 5.0
+fix 1 all npt temp 0.85 0.85 1.0 iso 0.0 0.0 5.0
+fix 2 all efield 0.0 0.0 0.0
+
+log equi.log

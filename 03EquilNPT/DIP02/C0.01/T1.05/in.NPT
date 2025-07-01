@@ -1,0 +1,49 @@
+variable pdump equal 5000
+variable prun equal 500000
+
+units           lj
+atom_style      full
+dimension       3
+neighbor        1.5 bin
+neigh_modify    every 3 delay 0 check yes
+boundary p p p
+
+bond_style fene
+kspace_style pppm 0.0001
+dielectric 1.0
+pair_style lj/cut/coul/long 2.5 6.0
+
+read_data ${data_file}
+
+#vdw potential
+pair_modify     shift yes
+pair_coeff   * * 1.0 1.0 2.5
+bond_coeff * 30.0 1.5 1.0 1.0
+
+special_bonds fene
+
+variable rho_t equal count(all)/vol
+thermo           5000
+thermo_style     custom step temp epair emol etotal press cpu xhi yhi zhi v_rho_t
+thermo_modify   norm yes flush yes
+
+velocity all create ${TT} 482748 dist gaussian mom yes rot yes
+timestep    0.01
+
+fix 1 all npt temp ${TT} ${TT} 1.0 iso 0.0 0.0 5.0
+fix 2 all efield 0.0 0.0 0.0
+
+log equi.log
+
+shell mkdir comp coord_comp
+
+dump 1 all image ${pdump} ./comp/bulk.*.ppm type type zoom 1.2
+dump_modify 1  backcolor white boxcolor black flush yes pad 9
+
+dump 2 all custom ${pdump} coord_comp/dump.*.txt id type x y z xu yu zu vx vy vz
+dump_modify 2 flush yes pad 9
+
+restart ${pdump} equi.restart1 equi.restart2
+run ${prun}
+
+write_data equi.dat

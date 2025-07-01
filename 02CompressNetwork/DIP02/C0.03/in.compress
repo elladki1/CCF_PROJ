@@ -1,0 +1,63 @@
+variable pdump equal 5000
+variable prun equal 100000
+variable pequi equal 200000
+variable eps equal 1.0
+
+
+units           lj
+atom_style      full
+dimension       3
+neighbor        1.5 bin
+neigh_modify    every 3 delay 0 check yes
+boundary p p p
+
+bond_style fene
+pair_style      lj/cut 2.5
+
+read_data ${data_file}
+
+velocity all create 1.0 482748 dist gaussian mom yes rot yes
+
+#vdw potential
+pair_modify     shift yes
+pair_coeff   * * 1.0 1.0 1.12246204831
+bond_coeff * 30.0 1.5 1.0 1.0
+special_bonds fene
+
+variable rr equal ((count(all)/${rho})^(1.0/3.0))/2.0
+variable rho_t equal count(all)/vol
+
+fix 1 all langevin 1.0 1.0 7.0 12345
+fix 2 all nve/limit 0.1
+fix 3 all deform 1 x final -${rr} ${rr} y final -${rr} ${rr} z final -${rr} ${rr} units box
+
+thermo          5000
+thermo_style    custom step temp epair emol etotal press cpu time
+thermo_modify norm yes flush yes
+timestep        0.01
+
+run ${pequi}
+
+reset_timestep 0
+timestep    0.01
+
+unfix 1
+unfix 2
+unfix 3
+
+velocity all create ${TT} 482748 dist gaussian mom yes rot yes
+
+fix 1 all langevin ${TT} ${TT} 1.0 12345
+fix 2 all nve
+
+shell mkdir comp coord_comp
+
+dump 1 all image ${pdump} ./comp/bulk.*.ppm type type zoom 1.2
+dump_modify 1  backcolor white boxcolor black flush yes pad 9
+
+dump 2 all custom ${pdump} coord_comp/dump.*.txt id type x y z xu yu zu vx vy vz
+dump_modify 2 flush yes pad 9
+
+run ${prun}
+
+write_data compressed.dat

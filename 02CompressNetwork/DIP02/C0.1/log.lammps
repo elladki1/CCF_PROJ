@@ -1,0 +1,345 @@
+LAMMPS (2 Aug 2023 - Update 2)
+WARNING: Using I/O redirection is unreliable with parallel runs. Better to use the -in switch to read input files. (src/lammps.cpp:548)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+variable pdump equal 5000
+variable prun equal 100000
+variable pequi equal 200000
+variable eps equal 1.0
+
+
+units           lj
+atom_style      full
+dimension       3
+neighbor        1.5 bin
+neigh_modify    every 3 delay 0 check yes
+boundary p p p
+
+bond_style fene
+pair_style      lj/cut 2.5
+
+read_data ${data_file}
+read_data /mnt/research/Cheng_Polymer/CCF_PROJ/01BuildNetwork/DIP02/C0.1/polymer.dat
+Reading data file ...
+  orthogonal box = (-73.6806 -73.6806 -73.6806) to (73.6806 73.6806 73.6806)
+  4 by 4 by 4 MPI processor grid
+  reading atoms ...
+  16000 atoms
+  scanning bonds ...
+  1 = max bonds/atom
+  reading bonds ...
+  8000 bonds
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        0        0       
+  special bond factors coul:  0        0        0       
+     1 = max # of 1-2 neighbors
+     0 = max # of 1-3 neighbors
+     0 = max # of 1-4 neighbors
+     1 = max # of special neighbors
+  special bonds CPU = 0.016 seconds
+  read_data CPU = 0.092 seconds
+
+velocity all create 1.0 482748 dist gaussian mom yes rot yes
+
+#vdw potential
+pair_modify     shift yes
+pair_coeff   * * 1.0 1.0 1.12246204831
+bond_coeff * 30.0 1.5 1.0 1.0
+special_bonds fene
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     1 = max # of 1-2 neighbors
+     1 = max # of special neighbors
+  special bonds CPU = 0.001 seconds
+
+variable rr equal ((count(all)/${rho})^(1.0/3.0))/2.0
+variable rr equal ((count(all)/0.85)^(1.0/3.0))/2.0
+variable rho_t equal count(all)/vol
+
+fix 1 all langevin 1.0 1.0 7.0 12345
+fix 2 all nve/limit 0.1
+fix 3 all deform 1 x final -${rr} ${rr} y final -${rr} ${rr} z final -${rr} ${rr} units box
+fix 3 all deform 1 x final -13.300573168565 ${rr} y final -${rr} ${rr} z final -${rr} ${rr} units box
+fix 3 all deform 1 x final -13.300573168565 13.300573168565 y final -${rr} ${rr} z final -${rr} ${rr} units box
+fix 3 all deform 1 x final -13.300573168565 13.300573168565 y final -13.300573168565 ${rr} z final -${rr} ${rr} units box
+fix 3 all deform 1 x final -13.300573168565 13.300573168565 y final -13.300573168565 13.300573168565 z final -${rr} ${rr} units box
+fix 3 all deform 1 x final -13.300573168565 13.300573168565 y final -13.300573168565 13.300573168565 z final -13.300573168565 ${rr} units box
+fix 3 all deform 1 x final -13.300573168565 13.300573168565 y final -13.300573168565 13.300573168565 z final -13.300573168565 13.300573168565 units box
+
+thermo          5000
+thermo_style    custom step temp epair emol etotal press cpu time
+thermo_modify norm yes flush yes
+timestep        0.01
+
+run ${pequi}
+run 200000
+Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+Neighbor list info ...
+  update: every = 3 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 2.622462
+  ghost atom cutoff = 2.622462
+  binsize = 1.311231, bins = 113 113 113
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair lj/cut, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton
+      stencil: half/bin/3d
+      bin: standard
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+Per MPI rank memory allocation (min/avg/max) = 6.339 | 6.34 | 6.34 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press           CPU            Time     
+         0   1              211389.07      10.418899      211400.99      4227.8539      0              0            
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Communication cutoff 2.62246204831 is shorter than a bond length based estimate of 2.955. This may lead to errors. (src/comm.cpp:723)
+WARNING: Too many warnings: 13844 vs 100. All future warnings will be suppressed (src/thermo.cpp:472)
+      5000   1.0156687      0.00046344904  10.40589       11.929761      0.0020667771   0.35200063     50           
+     10000   1.0316088      0.001024979    10.39513       11.943471      0.0034866603   0.65479524     100          
+     15000   1.0223933      0.00096052627  10.404529      11.938984      0.0023924486   0.9411871      150          
+     20000   1.0215891      0.00071218792  10.397462      11.930462      0.0029670872   1.2270077      200          
+     25000   1.0172564      0.00063819143  10.39641       11.922837      0.0037917254   1.5301998      250          
+     30000   1.0281031      0.00061309646  10.410424      11.953095      0.0043455912   1.8327604      300          
+     35000   1.0137417      0.00099594723  10.390315      11.911828      0.004597867    2.1478949      350          
+     40000   1.0085289      0.00050892226  10.398556      11.911764      0.0035253165   2.4719886      400          
+     45000   1.028703       0.0015700779   10.427113      11.971641      0.0061719583   2.7793179      450          
+     50000   1.0150333      0.0009510231   10.401457      11.924863      0.0034339905   3.0780495      500          
+     55000   1.0319482      0.0011420215   10.394734      11.943702      0.0071253102   3.3799982      550          
+     60000   1.0138704      0.0022632843   10.400879      11.923852      0.0048327998   3.6813562      600          
+     65000   1.0278868      0.0015368406   10.396577      11.939847      0.0065062313   3.9829058      650          
+     70000   1.0062617      0.0010134274   10.401525      11.911837      0.0060548544   4.2920099      700          
+     75000   1.0143572      0.002049793    10.419555      11.943045      0.0080710256   4.5997108      750          
+     80000   1.0282068      0.0021498416   10.406305      11.950669      0.0082699136   4.9195312      800          
+     85000   1.0158857      0.0024472922   10.410754      11.936935      0.0085524031   5.2350453      850          
+     90000   1.0322513      0.0024447382   10.38873       11.939455      0.011217781    5.5462741      900          
+     95000   1.0189917      0.003328784    10.399413      11.931134      0.011119718    5.8871406      950          
+    100000   1.0235081      0.0027872429   10.405995      11.943948      0.017815205    6.2114379      1000         
+    105000   1.0195856      0.0026001537   10.398225      11.930108      0.010921927    6.5330702      1050         
+    110000   1.0123901      0.003272229    10.384304      11.906066      0.015707998    6.8543625      1100         
+    115000   1.0191188      0.0040745234   10.3945        11.927158      0.01953629     7.1823653      1150         
+    120000   1.0272939      0.0046297816   10.39296       11.938434      0.021206848    7.5216666      1200         
+    125000   1.015507       0.0064182042   10.385594      11.915177      0.021855626    7.8580442      1250         
+    130000   1.0215679      0.0055487947   10.38577       11.923575      0.031832214    8.2050792      1300         
+    135000   1.0101803      0.0060893801   10.385706      11.906971      0.033347494    8.5638017      1350         
+    140000   1.016796       0.0086773618   10.381232      11.915008      0.037828298    8.9120699      1400         
+    145000   1.0072218      0.0089435739   10.381392      11.901073      0.040027873    9.2652435      1450         
+    150000   1.0236657      0.013585719    10.377594      11.926582      0.060061912    9.638802       1500         
+    155000   1.0049986      0.015479226    10.375226      11.898109      0.069348716    10.011064      1550         
+    160000   0.99807305     0.019175859    10.372544      11.888736      0.075964574    10.405636      1600         
+    165000   0.99873567     0.023147872    10.363925      11.885083      0.11640735     10.837752      1650         
+    170000   1.0041921      0.030275796    10.368673      11.905143      0.15232958     11.279125      1700         
+    175000   0.99597322     0.042533498    10.37953       11.91593       0.23278803     11.768187      1750         
+    180000   0.99702167     0.059826351    10.373592      11.928858      0.33791079     12.307245      1800         
+    185000   0.99521487     0.083886674    10.362497      11.939113      0.52651383     12.889645      1850         
+    190000   1.0009692      0.14239969     10.370482      12.014242      0.94716548     13.480532      1900         
+    195000   1.0221807      0.28157305     10.366262      12.18101       2.1539901      14.124029      1950         
+    200000   1.0614574      0.74164242     10.366942      12.700671      6.918079       14.842278      2000         
+Loop time of 14.843 on 64 procs for 200000 steps with 16000 atoms
+
+Performance: 11641851.887 tau/day, 13474.366 timesteps/s, 215.590 Matom-step/s
+99.9% CPU use with 64 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.67526    | 0.7762     | 0.86939    |   4.7 |  5.23
+Bond    | 0.44859    | 0.53003    | 0.62863    |   5.0 |  3.57
+Neigh   | 1.5279     | 1.6022     | 1.6412     |   2.4 | 10.79
+Comm    | 6.8075     | 7.243      | 7.5965     |   7.1 | 48.80
+Output  | 0.0030405  | 0.0039553  | 0.032987   |   5.8 |  0.03
+Modify  | 3.1028     | 3.4899     | 3.9455     |   8.9 | 23.51
+Other   |            | 1.198      |            |       |  8.07
+
+Nlocal:            250 ave         261 max         242 min
+Histogram: 4 8 5 14 9 11 6 5 0 2
+Nghost:        1178.45 ave        1205 max        1156 min
+Histogram: 3 3 5 12 15 14 7 3 1 1
+Neighs:        7730.23 ave        8090 max        7443 min
+Histogram: 6 5 7 9 11 11 5 2 5 3
+
+Total # of neighbors = 494735
+Ave neighs/atom = 30.920938
+Ave special neighs/atom = 1
+Neighbor list builds = 11193
+Dangerous builds = 0
+
+reset_timestep 0
+timestep    0.01
+
+unfix 1
+unfix 2
+unfix 3
+
+velocity all create ${TT} 482748 dist gaussian mom yes rot yes
+velocity all create 1.0 482748 dist gaussian mom yes rot yes
+
+fix 1 all langevin ${TT} ${TT} 1.0 12345
+fix 1 all langevin 1.0 ${TT} 1.0 12345
+fix 1 all langevin 1.0 1.0 1.0 12345
+fix 2 all nve
+
+shell mkdir comp coord_comp
+
+dump 1 all image ${pdump} ./comp/bulk.*.ppm type type zoom 1.2
+dump 1 all image 5000 ./comp/bulk.*.ppm type type zoom 1.2
+dump_modify 1  backcolor white boxcolor black flush yes pad 9
+
+dump 2 all custom ${pdump} coord_comp/dump.*.txt id type x y z xu yu zu vx vy vz
+dump 2 all custom 5000 coord_comp/dump.*.txt id type x y z xu yu zu vx vy vz
+dump_modify 2 flush yes pad 9
+
+run ${prun}
+run 100000
+Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
+Per MPI rank memory allocation (min/avg/max) = 6.418 | 6.419 | 6.421 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press           CPU            Time     
+         0   1              0.74208143     10.366985      12.608972      6.8716275      0              0            
+      5000   1.0045427      0.70184202     10.350928      12.55949       6.6188782      0.73803453     50           
+     10000   0.99398251     0.71601392     10.356335      12.56323       6.7104925      1.555516       100          
+     15000   1.0010004      0.70006345     10.354519      12.555989      6.6164571      2.4131093      150          
+     20000   1.0027887      0.7093683      10.356294      12.569751      6.6183221      3.2245424      200          
+     25000   0.99606593     0.69973056     10.365327      12.559063      6.649635       4.0522585      250          
+     30000   0.99303735     0.7077364      10.352915      12.550115      6.6488655      4.9047909      300          
+     35000   1.0015814      0.695281       10.358118      12.555677      6.6402762      5.7372288      350          
+     40000   0.99885492     0.69392058     10.353951      12.54606       6.6102358      6.5584109      400          
+     45000   1.0004916      0.68875823     10.359685      12.549087      6.5436335      7.4314569      450          
+     50000   0.99633923     0.68368055     10.362365      12.540461      6.637188       8.2694038      500          
+     55000   0.99856206     0.70752885     10.361611      12.566889      6.6405777      9.1061531      550          
+     60000   0.9951378      0.6921813      10.352172      12.536967      6.5959412      9.9640692      600          
+     65000   0.98940169     0.70668035     10.358254      12.548944      6.7047486      10.812221      650          
+     70000   1.0102609      0.6916838      10.355455      12.562435      6.600373       11.66421       700          
+     75000   0.98830935     0.69805008     10.353282      12.533704      6.6380572      12.497333      750          
+     80000   0.99342183     0.70327849     10.347408      12.540726      6.6383177      13.335854      800          
+     85000   0.98807689     0.69634507     10.359347      12.537715      6.6055014      14.198604      850          
+     90000   1.0001196      0.70252806     10.360635      12.563249      6.6055101      15.051571      900          
+     95000   0.99665315     0.70047725     10.354196      12.54956       6.632152       15.92128       950          
+    100000   0.99465482     0.69023408     10.35679       12.538913      6.5019979      16.766651      1000         
+Loop time of 16.8595 on 64 procs for 100000 steps with 16000 atoms
+
+Performance: 5124707.367 tau/day, 5931.374 timesteps/s, 94.902 Matom-step/s
+99.7% CPU use with 64 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 3.0556     | 3.3731     | 3.606      |   6.9 | 20.01
+Bond    | 0.24957    | 0.28747    | 0.32611    |   3.1 |  1.71
+Neigh   | 2.0647     | 2.11       | 2.1327     |   1.4 | 12.51
+Comm    | 6.7448     | 7.0689     | 7.4273     |   6.5 | 41.93
+Output  | 1.2224     | 1.6128     | 1.9925     |  17.6 |  9.57
+Modify  | 1.3663     | 1.5022     | 1.7669     |   4.9 |  8.91
+Other   |            | 0.9051     |            |       |  5.37
+
+Nlocal:            250 ave         259 max         240 min
+Histogram: 3 1 5 9 10 10 13 9 2 2
+Nghost:        1183.11 ave        1206 max        1159 min
+Histogram: 2 5 4 6 13 15 6 5 7 1
+Neighs:        7723.78 ave        8073 max        7375 min
+Histogram: 3 5 8 5 7 13 9 9 1 4
+
+Total # of neighbors = 494322
+Ave neighs/atom = 30.895125
+Ave special neighs/atom = 1
+Neighbor list builds = 4439
+Dangerous builds = 0
+
+write_data compressed.dat
+System init for write_data ...
+Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
+Total wall time: 0:00:32
