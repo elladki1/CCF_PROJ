@@ -1,0 +1,179 @@
+LAMMPS (2 Aug 2023 - Update 2)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+# Define variables
+variable pdump equal 5000
+variable prun equal 200000
+variable P_target equal 0.0         # Lateral pressure target
+
+units           lj
+atom_style      full
+dimension       3
+neighbor        1.5 bin
+neigh_modify    every 3 delay 0 check yes
+boundary        p p p
+
+bond_style      fene
+kspace_style    pppm 0.0001
+dielectric      1.0
+
+# Pair Style LJ coulombic interactions and dpd tstat momentum conservation
+if "${idx} == 000" then     "pair_style	lj/cut/coul/long 2.5 6.0"     "read_data   ${datFile}"     "pair_style  none"     "pair_style  hybrid/overlay  lj/cut/coul/long 2.5 6.0 dpd/tstat ${TT} ${TT} 2.5 ${random}" else     "read_restart ${datFile}"     "pair_style  hybrid/overlay  lj/cut/coul/long 2.5 6.0 dpd/tstat ${TT} ${TT} 2.5 ${random}"
+pair_style	lj/cut/coul/long 2.5 6.0
+read_data   ${datFile}
+read_data   /mnt/research/Cheng_Polymer/CCF_PROJ/04Deform/DIP02/C0.01/T0.85/deform.dat
+Reading data file ...
+  orthogonal box = (-13.436552 -13.436552 -13.436552) to (13.436552 13.436552 13.436552)
+  2 by 4 by 4 MPI processor grid
+  reading atoms ...
+  16000 atoms
+  reading velocities ...
+  16000 velocities
+  scanning bonds ...
+  1 = max bonds/atom
+  reading bonds ...
+  8000 bonds
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        0        0       
+  special bond factors coul:  0        0        0       
+     1 = max # of 1-2 neighbors
+     0 = max # of 1-3 neighbors
+     0 = max # of 1-4 neighbors
+     1 = max # of special neighbors
+  special bonds CPU = 0.068 seconds
+  read_data CPU = 0.284 seconds
+pair_style  none
+pair_style  hybrid/overlay  lj/cut/coul/long 2.5 6.0 dpd/tstat ${TT} ${TT} 2.5 ${random}
+pair_style  hybrid/overlay  lj/cut/coul/long 2.5 6.0 dpd/tstat 0.85 ${TT} 2.5 ${random}
+pair_style  hybrid/overlay  lj/cut/coul/long 2.5 6.0 dpd/tstat 0.85 0.85 2.5 ${random}
+pair_style  hybrid/overlay  lj/cut/coul/long 2.5 6.0 dpd/tstat 0.85 0.85 2.5 11559
+
+pair_modify shift yes
+comm_modify  vel yes # communicate velocity information with ghost cells
+timestep 0.01
+variable rho_t equal count(all)/vol
+thermo 5000
+thermo_style custom step temp epair emol etotal press cpu xhi yhi zhi v_rho_t
+thermo_modify norm yes flush yes
+
+pair_coeff * * lj/cut/coul/long 1.0 1.0 2.5
+pair_coeff * * dpd/tstat ${TT}
+pair_coeff * * dpd/tstat 0.85
+
+
+bond_coeff * 30.0 1.5 1.0 1.0
+special_bonds fene
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     1 = max # of 1-2 neighbors
+     1 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+
+fix 2 all nve
+fix 3 all efield 0.0 0.0 ${EE}
+fix 3 all efield 0.0 0.0 0.0
+#fix 3a all press/berendsen x ${P_target} ${P_target} 5.0 y ${P_target} ${P_target} 5.0 couple xy
+
+# Performs a velocity initialization and a short equilibration for first run
+if "${idx} == 000" then     "unfix 2"     "fix 2 all nve/limit 0.1"     "velocity all create ${TT} ${random} dist gaussian mom yes rot yes loop all"     "run 5000"     "unfix 2"     "fix 2 all nve"     "reset_timestep 0"     "velocity all create ${TT} ${random} dist gaussian mom yes rot yes loop all"     "shell mkdir comp coord_comp ptensor"
+unfix 2
+fix 2 all nve/limit 0.1
+velocity all create ${TT} ${random} dist gaussian mom yes rot yes loop all
+velocity all create 0.85 ${random} dist gaussian mom yes rot yes loop all
+velocity all create 0.85 11559 dist gaussian mom yes rot yes loop all
+run 5000
+PPPM initialization ...
+  using 12-bit tables for long-range coulomb (src/kspace.cpp:342)
+  G vector (1/distance) = 0.4042746
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 8.9655633e-07
+  estimated relative force accuracy = 8.9655633e-07
+  using double precision FFTW3
+  3d grid and FFT values/proc = 1300 128
+Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
+Neighbor list info ...
+  update: every = 3 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7.5
+  ghost atom cutoff = 7.5
+  binsize = 3.75, bins = 8 8 8
+  2 neighbor lists, perpetual/occasional/extra = 2 0 0
+  (1) pair lj/cut/coul/long, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton
+      stencil: half/bin/3d
+      bin: standard
+  (2) pair dpd/tstat, perpetual, trim from (1)
+      attributes: half, newton on, cut 4
+      pair build: trim
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 9.406 | 9.42 | 9.432 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press           CPU            Xhi            Yhi            Zhi          v_rho_t    
+         0   0.85          -4.4474105      10.317712      7.1452217      0.62969279     0              13.436552      13.436552      13.436552      0.8244541    
+      5000   0.86324317    -4.5601101      10.327623      7.0622972      0.031348593    46.797871      13.436552      13.436552      13.436552      0.8244541    
+Loop time of 46.8013 on 32 procs for 5000 steps with 16000 atoms
+
+Performance: 92305.132 tau/day, 106.835 timesteps/s, 1.709 Matom-step/s
+99.9% CPU use with 32 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 26.503     | 29.462     | 39.359     |  49.3 | 62.95
+Bond    | 0.023393   | 0.026889   | 0.039084   |   2.1 |  0.06
+Kspace  | 2.2518     | 12.188     | 15.271     |  77.3 | 26.04
+Neigh   | 2.5398     | 2.5549     | 2.5685     |   0.5 |  5.46
+Comm    | 2.2756     | 2.3951     | 2.594      |   5.4 |  5.12
+Output  | 0.00012139 | 0.00023664 | 0.0035056  |   0.0 |  0.00
+Modify  | 0.050011   | 0.059161   | 0.092927   |   3.1 |  0.13
+Other   |            | 0.1151     |            |       |  0.25
+
+Nlocal:            500 ave         514 max         485 min
+Histogram: 1 2 2 7 4 6 2 1 6 1
+Nghost:        10563.3 ave       10594 max       10537 min
+Histogram: 3 3 3 4 5 5 2 3 3 1
+Neighs:         363982 ave      387839 max      341950 min
+Histogram: 3 2 5 3 5 4 4 0 3 3
+
+Total # of neighbors = 11647425
+Ave neighs/atom = 727.96406
+Ave special neighs/atom = 1
+Neighbor list builds = 207
+Dangerous builds = 0
+unfix 2
+fix 2 all nve
+reset_timestep 0
+velocity all create ${TT} ${random} dist gaussian mom yes rot yes loop all
+velocity all create 0.85 ${random} dist gaussian mom yes rot yes loop all
+velocity all create 0.85 11559 dist gaussian mom yes rot yes loop all
+shell mkdir comp coord_comp ptensor
+# Store pressure tensor information
+variable ts equal dt*step
+variable pxx equal pxx
+variable pyy equal pyy
+variable pzz equal pzz
+variable pxy equal pxy
+variable pxz equal pxz
+variable pyz equal pyz
+
+fix 6 all print 10 "${ts} ${pxx} ${pyy} ${pzz} ${pxy} ${pxz} ${pyz}" file ./ptensor/ptensor.txt.${idx} screen no
+fix 6 all print 10 "${ts} ${pxx} ${pyy} ${pzz} ${pxy} ${pxz} ${pyz}" file ./ptensor/ptensor.txt.000 screen no
+
+
+dump 1 all image ${pdump} ./comp/bulk.*.ppm type type zoom 1.2
+dump 1 all image 5000 ./comp/bulk.*.ppm type type zoom 1.2
+dump_modify 1  backcolor white boxcolor black flush yes pad 9
+
+dump 2 all custom ${pdump} coord_comp/dump.*.txt id type x y z xu yu zu vx vy vz
+dump 2 all custom 5000 coord_comp/dump.*.txt id type x y z xu yu zu vx vy vz
+dump_modify 2 flush yes pad 9
+
+restart ${pdump} prod.restart1.${idx} prod.restart2.${idx}
+restart 5000 prod.restart1.${idx} prod.restart2.${idx}
+restart 5000 prod.restart1.000 prod.restart2.${idx}
+restart 5000 prod.restart1.000 prod.restart2.000
+log prod.log${idx}
+log prod.log000
